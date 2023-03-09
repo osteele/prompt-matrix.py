@@ -25,5 +25,9 @@ test:
 test-watch:
 	poetry run pytest-watch
 
+.PHONY: tox
+tox:
+	poetry run tox
+
 .PHONY: all
 all: lint typecheck test
