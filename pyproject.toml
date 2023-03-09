@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prompt-matrix"
-version = "0.1.0"
+version = "0.1.1"
 description = "Expand prompt matrix strings"
 authors = ["Oliver Steele <steele@osteele.com>"]
 license = "MIT"
