@@ -2,6 +2,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Generator, List, Sequence, Union
 
+DEFAULT_KEYWORDS = dict(LBRA="<", RBRA=">", ALT="|")
+
 
 @dataclass
 class Expr:
@@ -18,23 +20,27 @@ class AltExpr(Expr):
         return "{" + " | ".join(map(repr, self.children)) + "}"
 
 
-def parse_tokens(token_iter, keywords):
+def parse_tokens(token_iter, keywords, is_outer=True):
     head = ConcatExpr()
     res = AltExpr([head])
     for t in token_iter:
         if t == keywords["LBRA"]:
-            head.children.append(parse_tokens(token_iter, keywords))
+            head.children.append(parse_tokens(token_iter, keywords, is_outer=False))
         elif t == keywords["RBRA"]:
-            break
+            if is_outer:
+                raise ValueError("Unmatched closing bracket")
+            return res
         elif t == keywords["ALT"]:
             head = ConcatExpr()
             res.children.append(head)
         else:
             head.children.append(t)
+    if not is_outer:
+        raise ValueError("Unmatched opening bracket")
     return res
 
 
-def parse(string: str, keywords: dict) -> Expr:
+def parse(string: str, keywords: dict = DEFAULT_KEYWORDS) -> Expr:
     pattern = "(" + "|".join(re.escape(s) for s in keywords.values()) + ")"
     tokens_iter = (s for s in re.split(pattern, string) if s)
     return parse_tokens(tokens_iter, keywords)

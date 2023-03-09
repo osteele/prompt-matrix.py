@@ -1,3 +1,5 @@
+import pytest
+
 import prompt_matrix
 
 
@@ -23,6 +25,13 @@ def test_expand_nested():
     assert "The blue fish" in results
 
 
+def test_implicit_gorup():
+    results = prompt_matrix.expand("the dog|a cat")
+    assert len(results) == 2
+    assert "the dog" in results
+    assert "a cat" in results
+
+
 def test_expand_with_keywords():
     results = prompt_matrix.expand(
         "The {dog,cat} in the {cardigan,hat}", brackets=["{", "}"], alt=","
@@ -31,3 +40,14 @@ def test_expand_with_keywords():
     assert "The dog in the hat" in results
     assert "The cat in the cardigan" in results
     assert "The cat in the hat" in results
+
+
+def test_unmatched_brackets():
+    with pytest.raises(ValueError):
+        prompt_matrix.expand("a <b|c> d <e|f")
+    with pytest.raises(ValueError):
+        prompt_matrix.expand("a <b|c> d e|f>")
+    with pytest.raises(ValueError):
+        prompt_matrix.expand("a <b|c> d <e|f>>")
+    with pytest.raises(ValueError):
+        prompt_matrix.expand("a <b|c> d <<e|f>")
