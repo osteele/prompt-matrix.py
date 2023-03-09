@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 import prompt_matrix
@@ -66,3 +68,9 @@ def test_optional():
 def test_disable_optional_brackets():
     results = prompt_matrix.expand("a [b] c", optional_brackets=None)
     assert results == ["a [b] c"]
+
+
+def test_choice():
+    random.seed(0)
+    result = prompt_matrix.choice("a <b|c> d")
+    assert result in ("a b d", "a c d")

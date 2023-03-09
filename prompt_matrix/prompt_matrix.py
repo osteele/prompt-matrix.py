@@ -1,3 +1,4 @@
+import random
 import re
 from dataclasses import dataclass, field
 from typing import Generator, List, Sequence, Union
@@ -90,9 +91,11 @@ def iterexpand(
 
     Args:
         string: The string to expand.
-        brackets: A pair of characters that delimit the start and end of
+        brackets: A pair of strings that delimit the start and end of
             an alternation group.
-        alt: The character that separates alternatives in a prompt
+        alt: The string that separates alternatives in a prompt
+        optional_brackets: A pair of strings that delimit the start and end of
+            an optional group.
 
     Returns:
         An iterator of strings.
@@ -126,11 +129,33 @@ def expand(
 
     Args:
         string: The string to expand.
-        brackets: A pair of characters that delimit the start and end of
+        brackets: A pair of strings that delimit the start and end of
             an alternation group.
-        alt: The character that separates alternatives in a prompt
+        alt: The string that separates alternatives in a prompt
+        optional_brackets: A pair of strings that delimit the start and end of
+            an optional group.
 
     Returns:
         A list of strings.
     """
     return list(iterexpand(string, brackets, alt, optional_brackets))
+
+
+def choice(
+    string: str, brackets=("<", ">"), alt="|", optional_brackets=("[", "]")
+) -> str:
+    """Return a random expansion of a string that specifies a prompt matrix into
+    a list of strings.
+
+    Args:
+        string: The string to expand. brackets: A pair of strings that delimit
+        the start and end of
+            an alternation group.
+        alt: The string that separates alternatives in a prompt
+        optional_brackets: A pair of strings that delimit the start and end of
+            an optional group.
+
+    Returns:
+        A string.
+    """
+    return random.choice(expand(string, brackets, alt, optional_brackets))
