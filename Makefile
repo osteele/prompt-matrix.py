@@ -30,4 +30,4 @@ tox:
 	poetry run tox
 
 .PHONY: all
-all: lint typecheck test
+all: format lint typecheck test

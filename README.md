@@ -10,14 +10,23 @@ the hat"]`.
 The motivating use case for this package is the comparison of different prompts
 in text and image generation systems such as Stable Diffusion and GPT-3.
 
+## Features
+
 A prompt string may contain multiple alternations. For example, `"The <dog|cat>
 in the <cardigan|hat>"` produces a list of the four strings `"The dog in the
 cardigan"`, `"The dog in the hat"`, `"The cat in the cardigan"`, and `"The cat
 in the hat"`.
 
-A prompt string may also contain nested alternations. For example, `"The
+A prompt string may contain nested alternations. For example, `"The
 <<small|large> dog|cat>"` produces the strings `"The small dog"`, `"The large
 do"`, and `"The cat"`.
+
+Brackets `[]` enclose optional elements. For example, `"The [small] cat"` is
+equivalent to `"The <small,> cat"`, and both produce the strings `"The small
+cat"` and `"The  cat"`.
+
+The special characters `<>{}|` can be replaced strings, or disabled by specifying
+`None` or the empty string.
 
 > **Note**: The disjunction is bounded by the enclosing brackets, if any. `"The
 dog|cat in the cardigan|hat"` generates the three strings `"The dog"`, `"cat in

@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Generator, List, Sequence, Union
 
-DEFAULT_KEYWORDS = dict(LBRA="<", RBRA=">", ALT="|")
+DEFAULT_KEYWORDS = dict(ALT_LBRA="<", ALT_RBRA=">", ALT="|", OPT_LBRA="[", OPT_RBRA="]")
 
 
 @dataclass
@@ -20,28 +20,46 @@ class AltExpr(Expr):
         return "{" + " | ".join(map(repr, self.children)) + "}"
 
 
-def parse_tokens(token_iter, keywords, is_outer=True):
-    head = ConcatExpr()
-    res = AltExpr([head])
+# handcrafted recursive descent parser
+def parse_tokens(token_iter, keywords, close_bracket=None):
+    res = head = ConcatExpr()
+    # res = AltExpr([head])
     for t in token_iter:
-        if t == keywords["LBRA"]:
-            head.children.append(parse_tokens(token_iter, keywords, is_outer=False))
-        elif t == keywords["RBRA"]:
-            if is_outer:
+        if t == keywords["ALT_LBRA"]:
+            head.children.append(
+                parse_tokens(token_iter, keywords, close_bracket=keywords["ALT_RBRA"])
+            )
+        elif t == keywords["OPT_LBRA"]:
+            group = parse_tokens(
+                token_iter, keywords, close_bracket=keywords["OPT_RBRA"]
+            )
+            if not isinstance(group, AltExpr):
+                group = AltExpr([group])
+            group.children.append(ConcatExpr())
+            head.children.append(group)
+            new_head = ConcatExpr()
+            head.children.append(new_head)
+            head = new_head
+        elif t == close_bracket:
+            return res
+        elif t in (keywords["ALT_RBRA"], keywords["OPT_RBRA"]):
+            if close_bracket != keywords["OPT_RBRA"]:
                 raise ValueError("Unmatched closing bracket")
             return res
         elif t == keywords["ALT"]:
+            if not isinstance(res, AltExpr):
+                res = AltExpr([res])
             head = ConcatExpr()
             res.children.append(head)
         else:
             head.children.append(t)
-    if not is_outer:
+    if close_bracket:
         raise ValueError("Unmatched opening bracket")
     return res
 
 
 def parse(string: str, keywords: dict = DEFAULT_KEYWORDS) -> Expr:
-    pattern = "(" + "|".join(re.escape(s) for s in keywords.values()) + ")"
+    pattern = "(" + "|".join(re.escape(s) for s in keywords.values() if s) + ")"
     tokens_iter = (s for s in re.split(pattern, string) if s)
     return parse_tokens(tokens_iter, keywords)
 
@@ -64,7 +82,9 @@ def iter_expr(expr: Union[Expr, str]) -> Generator[List[str], None, None]:
         yield [str(expr)]  # mypy needs the str() here
 
 
-def iterexpand(string: str, brackets=("<", ">"), alt="|") -> Generator[str, None, None]:
+def iterexpand(
+    string: str, brackets=("<", ">"), alt="|", optional_brackets=("[", "]")
+) -> Generator[str, None, None]:
     """Expand a string that specifies a prompt matrix into a list of
     strings.
 
@@ -77,12 +97,30 @@ def iterexpand(string: str, brackets=("<", ">"), alt="|") -> Generator[str, None
     Returns:
         An iterator of strings.
     """
-    keywords = dict(LBRA=brackets[0], RBRA=brackets[1], ALT=alt)
+    brackets = brackets or (None, None)
+    if len(brackets) != 2:
+        raise ValueError("brackets must be a pair of strings")
+    if not brackets[0] or not brackets[1]:
+        brackets, alt = (None, None), None
+    optional_brackets = optional_brackets or (None, None)
+    if len(brackets) != 2:
+        raise ValueError("optional_brackets must be a pair of strings")
+    if not optional_brackets[0] or not optional_brackets[1]:
+        brackets = (None, None)
+    keywords = dict(
+        ALT_LBRA=brackets[0],
+        ALT_RBRA=brackets[1],
+        OPT_LBRA=optional_brackets[0],
+        OPT_RBRA=optional_brackets[1],
+        ALT=alt,
+    )
     expr = parse(string, keywords)
     yield from ("".join(words) for words in iter_expr(expr))
 
 
-def expand(string: str, brackets=("<", ">"), alt="|") -> List[str]:
+def expand(
+    string: str, brackets=("<", ">"), alt="|", optional_brackets=("[", "]")
+) -> List[str]:
     """Expand a string that specifies a prompt matrix into a list of
     strings.
 
@@ -95,4 +133,4 @@ def expand(string: str, brackets=("<", ">"), alt="|") -> List[str]:
     Returns:
         A list of strings.
     """
-    return list(iterexpand(string, brackets, alt))
+    return list(iterexpand(string, brackets, alt, optional_brackets))
