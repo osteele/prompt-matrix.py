@@ -21,5 +21,9 @@ typecheck:
 test:
 	poetry run pytest
 
+.PHONY: test-watch
+test-watch:
+	poetry run pytest-watch
+
 .PHONY: all
 all: lint typecheck test
