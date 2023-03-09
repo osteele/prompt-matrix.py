@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "prompt-matrix"
+version = "0.1.0"
+description = "Expand prompt matrix strings"
+authors = ["Oliver Steele <steele@osteele.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "prompt_matrix"}]
+include = [
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
