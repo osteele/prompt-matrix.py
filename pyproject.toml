@@ -1,10 +1,13 @@
 [tool.poetry]
 name = "prompt-matrix"
-version = "0.1.2"
+version = "0.1.3"
 description = "Expand a prompt matrix strings into a list of prompts."
 authors = ["Oliver Steele <steele@osteele.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/osteele/prompt-matrix"
+homepage = "https://osteele.github.io/prompt-matrix/"
+keywords = ["prompt-engineering"]
 packages = [{include = "prompt_matrix"}]
 include = [
     "LICENSE",
