@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import Generator, List, Sequence, Union
 import re
 
 
@@ -34,30 +34,31 @@ def parse_tokens(token_iter, keywords):
     return res
 
 
-def parse(string, keywords):
+def parse(string: str, keywords: dict) -> Expr:
     pattern = '(' + '|'.join(re.escape(s) for s in keywords.values()) + ')'
     tokens_iter = (s for s in re.split(pattern, string) if s)
     return parse_tokens(tokens_iter, keywords)
 
 
-def seq_alts_i(exprs):
+def iter_alts(exprs: Sequence[Union[Expr, str]]) -> Generator[List[str], None, None]:
+    """Iterate over all possible combinations of expressions."""
     if exprs:
         x, *xs = exprs
-        yield from ([*y, *ys] for ys in seq_alts_i(xs) for y in expand_expr_i(x))
+        yield from ([*y, *ys] for ys in iter_alts(xs) for y in iter_expr(x))
     else:
         yield []
 
 
-def expand_expr_i(expr):
+def iter_expr(expr: Union[Expr, str]) -> Generator[List[str], None, None]:
     if isinstance(expr, ConcatExpr):
-        yield from seq_alts_i(expr.children)
+        yield from iter_alts(expr.children)
     elif isinstance(expr, AltExpr):
-        yield from (x for e in expr.children for x in expand_expr_i(e))
-    else:
-        yield [expr]
+        yield from (x for e in expr.children for x in iter_expr(e))
+    elif isinstance(expr, str):
+        yield [str(expr)]  # mypy needs the str() here
 
 
-def iterexpand(string, brackets=('<', '>'), alt='|'):
+def iterexpand(string: str, brackets=('<', '>'), alt='|') -> Generator[str, None, None]:
     """Expand a string that specifies a prompt matrix into a list of
     strings.
 
@@ -72,10 +73,10 @@ def iterexpand(string, brackets=('<', '>'), alt='|'):
     """
     keywords = dict(LBRA=brackets[0], RBRA=brackets[1], ALT=alt)
     expr = parse(string, keywords)
-    return (''.join(ar) for ar in expand_expr_i(expr))
+    yield from (''.join(words) for words in iter_expr(expr))
 
 
-def expand(string, brackets=('<', '>'), alt='|'):
+def expand(string: str, brackets=('<', '>'), alt='|') -> List[str]:
     """Expand a string that specifies a prompt matrix into a list of
     strings.
 
