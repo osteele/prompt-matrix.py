@@ -1,32 +1,32 @@
+import re
 from dataclasses import dataclass, field
 from typing import Generator, List, Sequence, Union
-import re
 
 
 @dataclass
 class Expr:
-    children: List['Expr'] = field(default_factory=list)
+    children: List["Expr"] = field(default_factory=list)
 
 
 class ConcatExpr(Expr):
     def __repr__(self):
-        return '{' + ' '.join(map(repr, self.children)) + '}'
+        return "{" + " ".join(map(repr, self.children)) + "}"
 
 
 class AltExpr(Expr):
     def __repr__(self):
-        return '{' + ' | '.join(map(repr, self.children)) + '}'
+        return "{" + " | ".join(map(repr, self.children)) + "}"
 
 
 def parse_tokens(token_iter, keywords):
     head = ConcatExpr()
     res = AltExpr([head])
     for t in token_iter:
-        if t == keywords['LBRA']:
+        if t == keywords["LBRA"]:
             head.children.append(parse_tokens(token_iter, keywords))
-        elif t == keywords['RBRA']:
+        elif t == keywords["RBRA"]:
             break
-        elif t == keywords['ALT']:
+        elif t == keywords["ALT"]:
             head = ConcatExpr()
             res.children.append(head)
         else:
@@ -35,7 +35,7 @@ def parse_tokens(token_iter, keywords):
 
 
 def parse(string: str, keywords: dict) -> Expr:
-    pattern = '(' + '|'.join(re.escape(s) for s in keywords.values()) + ')'
+    pattern = "(" + "|".join(re.escape(s) for s in keywords.values()) + ")"
     tokens_iter = (s for s in re.split(pattern, string) if s)
     return parse_tokens(tokens_iter, keywords)
 
@@ -58,7 +58,7 @@ def iter_expr(expr: Union[Expr, str]) -> Generator[List[str], None, None]:
         yield [str(expr)]  # mypy needs the str() here
 
 
-def iterexpand(string: str, brackets=('<', '>'), alt='|') -> Generator[str, None, None]:
+def iterexpand(string: str, brackets=("<", ">"), alt="|") -> Generator[str, None, None]:
     """Expand a string that specifies a prompt matrix into a list of
     strings.
 
@@ -73,10 +73,10 @@ def iterexpand(string: str, brackets=('<', '>'), alt='|') -> Generator[str, None
     """
     keywords = dict(LBRA=brackets[0], RBRA=brackets[1], ALT=alt)
     expr = parse(string, keywords)
-    yield from (''.join(words) for words in iter_expr(expr))
+    yield from ("".join(words) for words in iter_expr(expr))
 
 
-def expand(string: str, brackets=('<', '>'), alt='|') -> List[str]:
+def expand(string: str, brackets=("<", ">"), alt="|") -> List[str]:
     """Expand a string that specifies a prompt matrix into a list of
     strings.
 

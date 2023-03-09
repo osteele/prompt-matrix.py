@@ -12,7 +12,8 @@ def test_expand():
 
 def test_expand_nested():
     results = prompt_matrix.expand(
-        "The <<small|large> <brown|black> dog|<red|blue> fish>")
+        "The <<small|large> <brown|black> dog|<red|blue> fish>"
+    )
     assert len(results) == 6
     assert "The small brown dog" in results
     assert "The small black dog" in results
@@ -23,8 +24,9 @@ def test_expand_nested():
 
 
 def test_expand_with_keywords():
-    results = prompt_matrix.expand("The {dog,cat} in the {cardigan,hat}", brackets=[
-        '{', '}'], alt=',')
+    results = prompt_matrix.expand(
+        "The {dog,cat} in the {cardigan,hat}", brackets=["{", "}"], alt=","
+    )
     assert "The dog in the cardigan" in results
     assert "The dog in the hat" in results
     assert "The cat in the cardigan" in results
