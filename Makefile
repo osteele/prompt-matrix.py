@@ -29,5 +29,9 @@ test-watch:
 tox:
 	poetry run tox
 
-.PHONY: all
-all: format lint typecheck test
+.PHONY: precommit
+precommit: format lint typecheck test
+
+.PHONY: publish
+publish: format lint typecheck tox
+	poetry publish --build --username __token__ --password $PYPI_API_TOKEN
