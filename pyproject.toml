@@ -34,6 +34,9 @@ classifiers = [
     'Topic :: Text Processing :: Filters',
 ]
 
+[tool.isort]
+profile = "black"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 

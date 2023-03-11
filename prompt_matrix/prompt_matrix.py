@@ -1,9 +1,29 @@
+import dataclasses
 import random
 import re
 from dataclasses import dataclass, field
 from typing import Generator, List, Sequence, Union
 
-DEFAULT_KEYWORDS = dict(ALT_LBRA="<", ALT_RBRA=">", ALT="|", OPT_LBRA="[", OPT_RBRA="]")
+
+@dataclass
+class Keywords:
+    ALT_LBRA: str = "<"
+    ALT_RBRA: str = ">"
+    ALT: str = "|"
+    OPT_LBRA: str = "["
+    OPT_RBRA: str = "]"
+
+    def values(self):
+        return dataclasses.astuple(self)
+
+
+DEFAULT_KEYWORDS = Keywords()
+
+# get the values of string fields of the default keywords
+DEFAULT_KEYWORDS_VALUES = tuple(
+    getattr(DEFAULT_KEYWORDS, f.name)
+    for f in DEFAULT_KEYWORDS.__dataclass_fields__.values()
+)
 
 
 @dataclass
@@ -26,14 +46,12 @@ def parse_tokens(token_iter, keywords, close_bracket=None):
     res = head = ConcatExpr()
     # res = AltExpr([head])
     for t in token_iter:
-        if t == keywords["ALT_LBRA"]:
+        if t == keywords.ALT_LBRA:
             head.children.append(
-                parse_tokens(token_iter, keywords, close_bracket=keywords["ALT_RBRA"])
+                parse_tokens(token_iter, keywords, close_bracket=keywords.ALT_RBRA)
             )
-        elif t == keywords["OPT_LBRA"]:
-            group = parse_tokens(
-                token_iter, keywords, close_bracket=keywords["OPT_RBRA"]
-            )
+        elif t == keywords.OPT_LBRA:
+            group = parse_tokens(token_iter, keywords, close_bracket=keywords.OPT_RBRA)
             if not isinstance(group, AltExpr):
                 group = AltExpr([group])
             group.children.append(ConcatExpr())
@@ -43,11 +61,11 @@ def parse_tokens(token_iter, keywords, close_bracket=None):
             head = new_head
         elif t == close_bracket:
             return res
-        elif t in (keywords["ALT_RBRA"], keywords["OPT_RBRA"]):
-            if close_bracket != keywords["OPT_RBRA"]:
+        elif t in (keywords.ALT_RBRA, keywords.OPT_RBRA):
+            if close_bracket != keywords.OPT_RBRA:
                 raise ValueError("Unmatched closing bracket")
             return res
-        elif t == keywords["ALT"]:
+        elif t == keywords.ALT:
             if not isinstance(res, AltExpr):
                 res = AltExpr([res])
             head = ConcatExpr()
@@ -110,7 +128,7 @@ def iterexpand(
         raise ValueError("optional_brackets must be a pair of strings")
     if not optional_brackets[0] or not optional_brackets[1]:
         brackets = (None, None)
-    keywords = dict(
+    keywords = Keywords(
         ALT_LBRA=brackets[0],
         ALT_RBRA=brackets[1],
         OPT_LBRA=optional_brackets[0],
