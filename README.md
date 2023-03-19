@@ -3,12 +3,12 @@
 [![Python](https://img.shields.io/pypi/pyversions/prompt-matrix.svg?style=plastic)](https://badge.fury.io/py/prompt-matrix)
 [![PyPI](https://badge.fury.io/py/prompt-matrix.svg)](https://badge.fury.io/py/prompt-matrix)
 
-A Python package to expand prompt matrix strings, *e.g.* the string `"The
+A Python package to expand prompt matrix strings. For example, the string `"The
 <dog|cat> in the hat"` expands to the list `["The dog in the hat", "The cat in
 the hat"]`.
 
-The motivating use case for this package is the comparison of different prompts
-in text and image generation systems such as Stable Diffusion and GPT-3.
+The motivating case for this package is to compare the effects of different
+prompts in text and image generation systems such as Stable Diffusion and GPT-3.
 
 ## Features
 
@@ -25,12 +25,13 @@ Brackets `[]` enclose optional elements. For example, `"The [small] cat"` is
 equivalent to `"The <small,> cat"`, and both produce the strings `"The small
 cat"` and `"The  cat"`.
 
-The special characters `<>{}|` can be replaced strings, or disabled by specifying
+The special characters `<>{}|` can be replaced by different strings, or disabled
+by specifying
 `None` or the empty string.
 
 > **Note**: The disjunction is bounded by the enclosing brackets, if any. `"The
 dog|cat in the cardigan|hat"` generates the three strings `"The dog"`, `"cat in
-the gardigan"`, and `"hat"`. This is in constrat to some other systems, that
+the gardigan"`, and `"hat"`. This is in contrast to some other systems, that
 scope a disjunction to the text delimited by surrounding whitespace.
 
 ## Install

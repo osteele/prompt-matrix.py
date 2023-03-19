@@ -44,7 +44,6 @@ class AltExpr(Expr):
 # handcrafted recursive descent parser
 def parse_tokens(token_iter, keywords, close_bracket=None):
     res = head = ConcatExpr()
-    # res = AltExpr([head])
     for t in token_iter:
         if t == keywords.ALT_LBRA:
             head.children.append(
