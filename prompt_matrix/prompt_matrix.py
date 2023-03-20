@@ -7,42 +7,47 @@ from typing import Generator, List, Sequence, Union
 
 @dataclass
 class Keywords:
-    ALT_LBRA: str = "<"
-    ALT_RBRA: str = ">"
-    ALT: str = "|"
-    OPT_LBRA: str = "["
-    OPT_RBRA: str = "]"
+    """Keywords used to delimit alternations and optionals in a prompt matrix."""
+
+    ALT: str = "|"  # alternation
+    ALT_LBRA: str = "<"  # left bracket for alternation
+    ALT_RBRA: str = ">"  # right bracket for alternation
+    OPT_LBRA: str = "["  # left bracket for optional
+    OPT_RBRA: str = "]"  # right bracket for optional
 
     def values(self):
         return dataclasses.astuple(self)
 
 
+"""The default keywords used to delimit alternations and optionals in a prompt
+matrix."""
 DEFAULT_KEYWORDS = Keywords()
-
-# get the values of string fields of the default keywords
-DEFAULT_KEYWORDS_VALUES = tuple(
-    getattr(DEFAULT_KEYWORDS, f.name)
-    for f in DEFAULT_KEYWORDS.__dataclass_fields__.values()
-)
 
 
 @dataclass
 class Expr:
+    """Base class for expressions in a prompt matrix."""
+
     children: List["Expr"] = field(default_factory=list)
 
 
 class ConcatExpr(Expr):
+    """A concatenation of expressions."""
+
     def __repr__(self):
         return "{" + " ".join(map(repr, self.children)) + "}"
 
 
 class AltExpr(Expr):
+    """An alternation of expressions."""
+
     def __repr__(self):
         return "{" + " | ".join(map(repr, self.children)) + "}"
 
 
 # handcrafted recursive descent parser
 def parse_tokens(token_iter, keywords, close_bracket=None):
+    """Parse a sequence of tokens into an expression."""
     res = head = ConcatExpr()
     for t in token_iter:
         if t == keywords.ALT_LBRA:
@@ -76,7 +81,8 @@ def parse_tokens(token_iter, keywords, close_bracket=None):
     return res
 
 
-def parse(string: str, keywords: dict = DEFAULT_KEYWORDS) -> Expr:
+def parse(string: str, keywords: Keywords = DEFAULT_KEYWORDS) -> Expr:
+    """Parse a string into an expression."""
     pattern = "(" + "|".join(re.escape(s) for s in keywords.values() if s) + ")"
     tokens_iter = (s for s in re.split(pattern, string) if s)
     return parse_tokens(tokens_iter, keywords)
@@ -92,12 +98,15 @@ def iter_alts(exprs: Sequence[Union[Expr, str]]) -> Generator[List[str], None, N
 
 
 def iter_expr(expr: Union[Expr, str]) -> Generator[List[str], None, None]:
+    """Iterate over all possible combinations of expressions."""
     if isinstance(expr, ConcatExpr):
         yield from iter_alts(expr.children)
     elif isinstance(expr, AltExpr):
         yield from (x for e in expr.children for x in iter_expr(e))
     elif isinstance(expr, str):
         yield [str(expr)]  # mypy needs the str() here
+    else:
+        raise ValueError("Invalid expression")
 
 
 def iterexpand(
