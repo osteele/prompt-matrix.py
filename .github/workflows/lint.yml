@@ -1,31 +1,40 @@
 name: Lint
 
-on: [pull_request, push]
+on: workflow_dispatch
+# on: [pull_request, push]
 
 jobs:
   lint_python:
     runs-on: ubuntu-latest
     steps:
+
     - uses: actions/checkout@v3
+
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
         cache: 'pip'
+
     - name: Install dependencies
       run: |
         pip install --upgrade pip
         pip install bandit black flake8 flake8-bugbear flake8-comprehensions isort mypy pytest ruff
+
     - name: formatting
       run: |
         black --check --diff .
         isort --check-only --profile black .
+
     - name: lint
       run: |
         ruff .
         flake8 . --count --ignore=C408,C901,E266 --max-line-length=120 --show-source --statistics
+
     - name: typecheck
       run: mypy --install-types --non-interactive .
+
     - name: bandit
       run: bandit --recursive --skip B101,B104,B310,B311,B303 ./prompt_matrix
+
     - name: Test
       run: pytest
