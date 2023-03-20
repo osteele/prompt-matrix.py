@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "prompt-matrix"
 version = "0.1.4"
-description = "Expand a prompt matrix strings into a list of prompts."
+description = "Expand a prompt matrix string into a list of prompts."
 authors = ["Oliver Steele <steele@osteele.com>"]
 license = "MIT"
 readme = "README.md"

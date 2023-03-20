@@ -4,9 +4,9 @@
 [![PyPI](https://badge.fury.io/py/prompt-matrix.svg)](https://badge.fury.io/py/prompt-matrix)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Python package to expand prompt matrix strings. For example, the string `"The
-<dog|cat> in the hat"` expands to the list `["The dog in the hat", "The cat in
-the hat"]`.
+Prompt Matrix is a small Python package that expands a string that specifies a
+prompt matrix. For example, the string `"The <dog|cat> in the hat"` expands to
+the list `["The dog in the hat", "The cat in the hat"]`.
 
 The motivating case for this package is to compare the effects of different
 prompts in text and image generation systems such as Stable Diffusion and GPT-3.
@@ -117,6 +117,11 @@ prompt_matrix.expand("The {dog,cat} in the {cardigan,hat}",
 #  "The cat in the cardigan",
 #  "The cat in the hat"]
 ```
+
+## Also See
+
+The JavaScript version of this library is at
+<https://github.com/osteele/prompt-matrix.py>.
 
 ## License
 
